@@ -15,26 +15,27 @@ not run its Makefile.PL or Build.PL.
 Hash: SHA1
 
 SHA1 556aeed578b0a108eb76a075e03e14713dbc83d0 Build.PL
-SHA1 1948cedda9843e35257a3b86782310f6ae83abd5 Changes
-SHA1 cdc0903ec5eb02aa4bb00f5912b8eba754ff96fd MANIFEST
-SHA1 63483763aad963cccc8b16bc4d501b71f4262567 META.json
-SHA1 62685aba8f7a7f18c3c12ab390da58320c4ed2b3 META.yml
+SHA1 0e8c13f5589bb7440ec83efb13058dcb180c05ad Changes
+SHA1 6db9b3404a2ec7b5c54bea3bf35b232048b20fac MANIFEST
+SHA1 b862c19c4b1b52fc7effc5e8f65e9c6b133836cc META.json
+SHA1 0b2223b539f721744256db188b2207445ccec44e META.yml
 SHA1 4170487a880556451ff65ce1234f14349f8ff865 README
 SHA1 70d7f2af8d17082fe7f8b0244a60924287a9c8e3 examples/Data-Header-Fields.synopsis
 SHA1 4079d4d6cee56313999e7d4d793c2ba37080836b examples/path/to/email.eml
-SHA1 3c6ff40baee87680b7533dc397ecba10cb4192bd lib/Data/Header/Fields.pm
-SHA1 7e27bb881c5b00bcf8d7a71e1e1d7bc9e32a8ce1 lib/Data/v.pm
+SHA1 4a40c9d66be73cc2d03bcf9b6bf5f77e1ce7fe2e lib/Data/Header/Fields.pm
+SHA1 0376d36c31f18d3cbe0ff8b5ec93580db7401492 lib/Data/v.pm
 SHA1 fcd518eb422bb728a33e9e1c73d65b5663456c99 t/01_Data-Header-Fields.t
-SHA1 81bb80b801a3a761e9217f1c936ec7d80f28ae8f t/01_Data-v.t
+SHA1 c2f13da1a330c4a6476dbf9159ca87b8535b7f7f t/01_Data-v.t
 SHA1 01c93c3aaf77cb2af36825deed3507db7baf42a2 t/02_Data-Header-Fields-Line.t
 SHA1 dc221c4efce14c4a50cb0a8e087f49c851a65b5b t/02_Data-Header-Fields-Value.t
-SHA1 094e4a758e7982928bcf09fc83685bb5fc936db3 t/02_Data-v-Card.t
+SHA1 7a7348c5494e9f0d0f40775b8fb4d04a49379d0b t/02_Data-v-Card.t
+SHA1 63163c3e39351d5957c0066f0eb815a59ab53e6f t/vcf/aldo.jpg
 SHA1 a2c2c7a30f1eea8c3c8efb3aa34e2c19de9fbdcd t/vcf/aldo.vcf
-SHA1 b14afaa008ffb8d5e033e6c1d075baf935556f36 t/vcf/enc.vcf
+SHA1 db1f49b1237d2346c4ac81d6f809e32c6107e5ec t/vcf/enc.vcf
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iEYEARECAAYFAk2OH1gACgkQC0OgUPgL2ScYcwCfWKnH7KbBMOSGdDn0RYnURnvZ
-Nj4An0hX58xPHvEcqe3l66TMYYfE4oRM
-=xAOn
+iEYEARECAAYFAk2Vl4cACgkQC0OgUPgL2Sf7CwCgg2GoUmARRn7chDGVJ62uot3j
+lq4AoLIdQ4R9uS/MescpT/iQ8SwuNfVH
+=vW/n
 -----END PGP SIGNATURE-----
