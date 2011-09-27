@@ -1,5 +1,5 @@
 This file contains message digests of all files listed in MANIFEST,
-signed via the Module::Signature module, version 0.66.
+signed via the Module::Signature module, version 0.68.
 
 To verify the content in this distribution, first make sure you have
 Module::Signature installed, then type:
@@ -14,28 +14,31 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 556aeed578b0a108eb76a075e03e14713dbc83d0 Build.PL
-SHA1 0e8c13f5589bb7440ec83efb13058dcb180c05ad Changes
-SHA1 6db9b3404a2ec7b5c54bea3bf35b232048b20fac MANIFEST
-SHA1 b862c19c4b1b52fc7effc5e8f65e9c6b133836cc META.json
-SHA1 0b2223b539f721744256db188b2207445ccec44e META.yml
-SHA1 4170487a880556451ff65ce1234f14349f8ff865 README
-SHA1 70d7f2af8d17082fe7f8b0244a60924287a9c8e3 examples/Data-Header-Fields.synopsis
-SHA1 4079d4d6cee56313999e7d4d793c2ba37080836b examples/path/to/email.eml
-SHA1 4a40c9d66be73cc2d03bcf9b6bf5f77e1ce7fe2e lib/Data/Header/Fields.pm
-SHA1 0376d36c31f18d3cbe0ff8b5ec93580db7401492 lib/Data/v.pm
-SHA1 fcd518eb422bb728a33e9e1c73d65b5663456c99 t/01_Data-Header-Fields.t
-SHA1 c2f13da1a330c4a6476dbf9159ca87b8535b7f7f t/01_Data-v.t
+SHA1 1646c37bef05ca73ab260cbef516bd2da33a3a3b Build.PL
+SHA1 f98ecf52b7cc9c60bb4bace9203e2e33fea9f5b8 Changes
+SHA1 4f32294235ffa99fb5933fb834f61db0332b7d7d MANIFEST
+SHA1 016895d830aa107410c11cd1528b8618a969830d META.json
+SHA1 6af93bb51268d5eb5020042acd2ae0f56597fd29 META.yml
+SHA1 d2eba022b91867f73aa044c45466b8810fbaccd4 README
+SHA1 933b2ac7ac948e098b4ef1148d0b5eb51bfabf8b examples/Data-Header-Fields.synopsis
+SHA1 4244c3bda1c0638b8eafcb4d26fcb16a542cb029 examples/Data-v.synopsis
+SHA1 d49a1c574525fdc56c69495c22d617173878d7a3 examples/path/to/email.eml
+SHA1 744d021d7f0a00ad5c26d3b32fe4c66ed37ff22e lib/Data/Header/Fields.pm
+SHA1 d78c11f4cf4956f3534cdeae75b73606eb8d4503 lib/Data/v.pm
+SHA1 91408d9e112690a2a401af65f94704d330504fb9 t/01_Data-Header-Fields.t
+SHA1 982d07ef45fa399800b1dff0a366b904799482d0 t/01_Data-v.t
 SHA1 01c93c3aaf77cb2af36825deed3507db7baf42a2 t/02_Data-Header-Fields-Line.t
 SHA1 dc221c4efce14c4a50cb0a8e087f49c851a65b5b t/02_Data-Header-Fields-Value.t
-SHA1 7a7348c5494e9f0d0f40775b8fb4d04a49379d0b t/02_Data-v-Card.t
+SHA1 ac9bbb930088e2fcfe64d1aef5a48c59b0f4861b t/02_Data-v-Card.t
 SHA1 63163c3e39351d5957c0066f0eb815a59ab53e6f t/vcf/aldo.jpg
-SHA1 a2c2c7a30f1eea8c3c8efb3aa34e2c19de9fbdcd t/vcf/aldo.vcf
-SHA1 db1f49b1237d2346c4ac81d6f809e32c6107e5ec t/vcf/enc.vcf
+SHA1 303f7ee6b49480d47871afb9daf55a3224f8584b t/vcf/aldo.vcf
+SHA1 a1707d8ed508b638ce265e72b1a8657f4cde15b2 t/vcf/enc.vcf
+SHA1 5aba184e54ead81b839dc7b7bd75295797421626 t/vcf/michael.jpg
+SHA1 925f00ea2faafc7af3bb83887823d569a8ebb2e4 t/vcf/michael.vcf
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.11 (GNU/Linux)
 
-iEYEARECAAYFAk2Vl4cACgkQC0OgUPgL2Sf7CwCgg2GoUmARRn7chDGVJ62uot3j
-lq4AoLIdQ4R9uS/MescpT/iQ8SwuNfVH
-=vW/n
+iEYEARECAAYFAk6B46QACgkQC0OgUPgL2SdwvQCfSi9nJCwtBvJeWAtWOusJIgXs
+DYoAn051ZxF/0mJVc5/oJGGA6Dy8WX5h
+=BLYe
 -----END PGP SIGNATURE-----

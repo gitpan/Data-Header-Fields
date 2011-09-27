@@ -1,6 +1,7 @@
 Build.PL
 Changes
 examples/Data-Header-Fields.synopsis
+examples/Data-v.synopsis
 examples/path/to/email.eml
 lib/Data/Header/Fields.pm
 lib/Data/v.pm
@@ -16,4 +17,6 @@ t/02_Data-v-Card.t
 t/vcf/aldo.jpg
 t/vcf/aldo.vcf
 t/vcf/enc.vcf
+t/vcf/michael.jpg
+t/vcf/michael.vcf
 SIGNATURE    Added here by Module::Build

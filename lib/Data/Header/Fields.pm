@@ -1,53 +1,5 @@
 package Data::Header::Fields;
 
-=head1 NAME
-
-Data::Header::Fields - encode and decode RFC822 header field lines
-
-=head1 SYNOPSIS
-
-	use IO::Any;
-	my $email_msg = IO::Any->slurp([ 'path', 'to', 'email.eml' ]);
-	my ($email_header, $email_body) = split(/^\s*$/m, $email_msg, 2);
-
-	use Data::Header::Fields;
-	my $dhf = Data::Header::Fields->new->decode(\$email_header);
-	print 'From    - ', $dhf->get_value('From'), "\n";
-	print 'Subject - ', $dhf->get_value('Subject'), "\n";
-	print 'Date    - ', $dhf->get_value('Date'), "\n";
-	print '--- cut ---', "\n";
-
-	$dhf->set_field('To' => ' anyone@anywhere');
-	$dhf->rm_fields('Received');
-	
-	print $dhf->encode();
-
-=head1 WARNING
-
-experimental, use on your own risk :-)
-
-=head1 DESCRIPTION
-
-RFC822 - Standard for ARPA Internet Text Messages (L<http://tools.ietf.org/html/rfc822#section-3.2>)
-describes the format of header lines used in emails. The tricky part is
-the line folding.
-
-There are some "forks" of this standard. One of them is Debian RFC-2822-like
-fields and the other is RFC2425 that defines the so called vCard format.
-L<Data::Header::Fields> is generic enough to serve as a base class to parse
-those as well.
-
-One of the main goals of the module is to be able to edit the headers while
-keeping the lines that were not changed untouched.
-
-For the moment this is all documentation. After more tests with vCards and
-using this module for the basic parsing in L<Parse::Deb::Control> it will
-be stable enough.
-
-Currently this distribution is highly radioactive!
-
-=cut
-
 use warnings;
 use strict;
 
@@ -61,7 +13,7 @@ use overload
 	'cmp' => \&cmp,
 ;
 
-our $VERSION = '0.02';
+our $VERSION = '0.04';
 
 sub new {
 	my $class = shift;
@@ -198,8 +150,9 @@ sub get_fields {
 sub get_field {
 	my $self       = shift;
 	my $field_name = shift or croak 'field_name argument is mandatory';
+	my @extra_args = @_;
 	
-	my @fields = $self->get_fields($field_name);
+	my @fields = $self->get_fields($field_name, @extra_args);
 	croak 'more then one header field with name "'.$field_name.'"'
 		if @fields > 1;
 	
@@ -207,23 +160,24 @@ sub get_field {
 }
 
 sub get_value {
-	my $self       = shift;
-	my $field_name = shift or croak 'field_name argument is mandatory';
+	my $self = shift;
+	my $key  = shift or croak 'key argument is mandatory';
+	my @extra_args = @_;
 
-	my $field = $self->get_field($field_name);
+	my $field = $self->get_field($key, @extra_args);
 	return undef if not defined $field;
 	return $field->value;
 }
 
-sub update_fields {
-	my $self       = shift;
-	my $field_name = shift or croak 'field_name argument is mandatory';
-	my $value      = shift;
+sub update_values {
+	my $self  = shift;
+	my $key   = shift or croak 'key argument is mandatory';
+	my $value = shift;
 
 	my $key_cmp = $self->key_cmp;
 	my @lines = (
 		map {
-			($key_cmp->($_->key, $field_name) == 0 ? $_->value($value) : ());
+			($key_cmp->($_->key, $key) == 0 ? $_->value($value) : ());
 			$_;
 		} @{$self->_lines}
 	);
@@ -248,24 +202,24 @@ sub rm_fields {
 	return $self;
 }
 
-sub set_field {
-	my $self       = shift;
-	my $field_name = shift or croak 'field_name argument is mandatory';
-	my $value      = shift;
+sub set_value {
+	my $self  = shift;
+	my $key   = shift or croak 'key argument is mandatory';
+	my $value = shift;
 
-	my @fields = $self->get_fields($field_name);
+	my @fields = $self->get_fields($key);
 	if (@fields == 1) {
-		$self->update_fields($field_name, $value);
+		$self->update_values($key, $value);
 	}
 	elsif (@fields == 0) {
 		push @{$self->_lines}, Data::Header::Fields::Line->new(
-			'key' => $field_name,
+			'key' => $key,
 			'value' => $value,
 			'parent' => $self,
 		);
 	}
 	else { 
-		croak 'more then one header field with name "'.$field_name.'"';
+		croak 'more then one header field with name "'.$key.'"';
 	}
 	
 	
@@ -314,6 +268,8 @@ sub line_ending {
 
 package Data::Header::Fields::Value;
 
+use Scalar::Util 'weaken', 'isweak';
+
 use overload
 	'""' => \&as_string,
 	'cmp' => \&cmp,
@@ -332,7 +288,12 @@ sub new {
 		$value = { $value, @_ };
 	}
 	
-	return bless { 'parent' => $class->_default_parent, %{$value} }, $class;
+	my $self = bless { 'parent' => $class->_default_parent, %{$value} }, $class;
+	
+	weaken($self->{'parent'})
+		if (ref($self->{'parent'}) && !isweak($self->{'parent'}));
+	
+	return $self;
 }
 
 sub as_string {
@@ -388,7 +349,7 @@ sub value {
 
 package Data::Header::Fields::Line;
 
-use Scalar::Util 'blessed';
+use Scalar::Util 'blessed', 'weaken', 'isweak';
 
 use overload
 	'""' => \&as_string,
@@ -430,6 +391,9 @@ sub new {
 			);
 		}
 	}
+	
+	weaken($line->{'parent'})
+		if (ref($line->{'parent'}) && !isweak($line->{'parent'}));
 	
 	return bless $line, $class;
 }
@@ -507,6 +471,52 @@ sub parent {
 
 
 __END__
+
+=head1 NAME
+
+Data::Header::Fields - encode and decode RFC822 header field lines
+
+=head1 SYNOPSIS
+
+	use IO::Any;
+	my $email_msg = IO::Any->slurp([ 'path', 'to', 'email.eml' ]);
+	my ($email_header, $email_body) = split(/^\s*$/m, $email_msg, 2);
+
+	use Data::Header::Fields;
+	my $dhf = Data::Header::Fields->new->decode(\$email_header);
+	print 'From    - ', $dhf->get_value('From'), "\n";
+	print 'Subject - ', $dhf->get_value('Subject'), "\n";
+	print 'Date    - ', $dhf->get_value('Date'), "\n";
+	print '--- cut ---', "\n";
+
+	$dhf->set_value('To' => ' anyone@anywhere');
+	$dhf->rm_fields('Received');
+	
+	print $dhf->encode();
+
+=head1 WARNING
+
+experimental, use on your own risk :-)
+
+=head1 DESCRIPTION
+
+RFC822 - Standard for ARPA Internet Text Messages (L<http://tools.ietf.org/html/rfc822#section-3.2>)
+describes the format of header lines used in emails. The tricky part is
+the line folding.
+
+There are some "forks" of this standard. One of them is Debian RFC-2822-like
+fields and the other is RFC2425 that defines the so called vCard format.
+L<Data::Header::Fields> is generic enough to serve as a base class to parse
+those as well.
+
+One of the main goals of the module is to be able to edit the headers while
+keeping the lines that were not changed untouched.
+
+For the moment this is all documentation. After more tests with vCards and
+using this module for the basic parsing in L<Parse::Deb::Control> it will
+be stable enough.
+
+Currently this distribution is highly radioactive!
 
 =head1 SEE ALSO
 

@@ -1,13 +1,5 @@
 package Data::v;
 
-=head1 NAME
-
-=head1 SYNOPSIS
-
-=head1 DESCRIPTION
-
-=cut
-
 use warnings;
 use strict;
 
@@ -15,7 +7,7 @@ use Carp;
 use Scalar::Util 'blessed';
 use List::MoreUtils 'any';
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use base 'Data::Header::Fields';
 
@@ -61,7 +53,7 @@ sub decode {
 	my $v_type;
 	while (my $line = shift @{$lines}) {
 		if ($line->key eq 'BEGIN') {
-			$v_type = $line->value.'';
+			$v_type = $line->value->as_string;
 			croak 'unknown v-type "'.$v_type.'"'
 				if not $v_types{$v_type};
 			
@@ -76,8 +68,8 @@ sub decode {
 			next;
 		}
 		elsif ($line->key eq 'END') {
-			croak 'BEGIN and END mismatch "'.$v_type.'" ne "'.$line->[1].'"'
-				if $v_type ne $line->value;
+			croak 'BEGIN and END mismatch "'.$v_type.'" ne "'.$line->value->as_string.'"'
+				if $v_type ne $line->value->as_string;
 			
 			$v_type = undef;
 			next;
@@ -149,6 +141,9 @@ package Data::v::Card;
 
 use base 'Data::v';
 
+use List::MoreUtils 'any';
+use Carp 'croak';
+
 sub version { return $_[0]->get_value('version') || '2.1'; }
 
 sub rebless_lines {
@@ -169,6 +164,23 @@ sub _default_parent {
 sub line_ending {
 	my $self = shift;
 	return $self->parent->parent->line_ending(@_);
+}
+
+sub get_fields {
+	my $self        = shift;
+	my $field_name  = shift or croak 'field_name argument is mandatory';
+	my $param_name  = shift;
+	my $param_value = shift;
+	
+	my @fields = $self->SUPER::get_fields($field_name);
+	if (defined $param_name) {
+		@fields = 
+			grep { any { lc $_->value eq $param_value } $_->get_key_params($param_name) }
+			@fields
+		;
+	}
+	
+	return @fields;
 }
 
 1;
@@ -232,7 +244,7 @@ sub _decode_key_params {
 			
 			push
 				@key_params,
-					map { { ('name' => $param_name, 'value' => $_) } }
+					map { Data::v::Param->new('name' => $param_name, 'value' => $_, 'parent' => $self) }
 					(split(/,/, $param_str))
 			;
 		}
@@ -240,7 +252,7 @@ sub _decode_key_params {
 		$self->key($orig_key_name);
 		$self->params(\@key_params);
 		
-		my $enc_type   = lc $self->get_key_param_value('encoding');		
+		my $enc_type   = lc ($self->get_key_param_value('encoding') || '');
 		if ($enc_type) {
 			if ($enc_type eq 'quoted-printable') {
 				$self->{value} = Data::Header::Fields::Value->new(
@@ -257,7 +269,7 @@ sub _decode_key_params {
 			}
 		}
 
-		my $charset = lc $self->get_key_param_value('charset');
+		my $charset = lc ($self->get_key_param_value('charset') || '');
 		$charset ||= 'utf8'
 			if (none { $_ eq $key_name } qw(photo logo sound key));
 
@@ -324,16 +336,17 @@ sub update_key_params {
 		
 		# update existing
 		foreach my $param (@{$self->params}) {
-			$param->{'value'} = shift @new_params    # will returns undefs if depleeted
-				if ($param->{'name'} eq $param_name);
+			$param->value(shift @new_params)    # will returns undefs if depleeted
+				if ($param->name eq $param_name);
 		}
 		
 		# add any additional new
 		foreach my $add_value (@new_params) {
-			push @{$self->{params}}, {
-				'name'  => $param_name,
-				'value' => $add_value,
-			};
+			push @{$self->{params}}, Data::v::Param->new(
+				'parent' => $self,
+				'name'   => $param_name,
+				'value'  => $add_value,
+			);
 		}
 		
 		# remove any additional old
@@ -364,7 +377,7 @@ sub set_key_param {
 		$self->update_key_params($param_name, $param_value);
 	}
 	elsif (@params == 0) {
-		push @{$self->params}, { 'name' => $param_name, 'value' => $param_value };
+		push @{$self->params}, Data::v::Param->new('name' => $param_name, 'value' => $param_value, 'parent' => $self);
 	}
 	else { 
 		croak 'more then one param field with name "'.$param_name.'"';
@@ -379,7 +392,7 @@ sub rm_key_param {
 
 	my @params = (
 		grep {
-			$_->{'name'} ne $param_name
+			$_->name ne $param_name
 		} @{$self->params}
 	);
 	$self->params(\@params);
@@ -394,10 +407,10 @@ sub _encode_key_params {
 	return if scalar @{$params} == 0;
 	my $key   = $self->key;
 
-	my $charset = lc $self->get_key_param_value('charset') || 'utf8';
+	my $charset = lc ($self->get_key_param_value('charset') || 'utf8');
 	$self->{value} = eval { Encode::encode($charset, $self->{value}) };
 	
-	my $enc_type   = lc $self->get_key_param_value('encoding');		
+	my $enc_type   = lc ($self->get_key_param_value('encoding') || '');
 	if ($enc_type) {
 		if ($enc_type eq 'quoted-printable') {
 			$self->{value} = encode_qp($self->{value}, "");
@@ -415,27 +428,25 @@ sub _encode_key_params {
 			join(
 				';',
 				(
-					map {
-						(lc $_->{'name'} eq 'type')
-						? ($_->{'value'})
-						: $_->{'name'}.'='.$_->{'value'} }
-					grep { defined $_->{'value'} }
+					map  { $_->as_string }
+					grep { defined $_->value }
 					@{$params}
 				),
 			)
 		);
 	}
 	elsif ($self->version ge '3.0') {
-		my @types = map { $_->{'value'} } $self->get_key_params('type');
+		my @types = map { $_->as_string } $self->get_key_params('type');
 		$key .= ';'.(
 			join(
 				';',
 				(
 					map {
-						(lc $_->{'name'} eq 'type')
+						(lc $_->name eq 'type')
 						? ( @types ? ('TYPE='.join(',',splice(@types,0,scalar @types))) : () )
-						: $_->{'name'}.'='.$_->{'value'} }
-					grep { defined $_->{'value'} }
+						: $_->as_string
+					}
+					grep { defined $_->value }
 					@{$params}
 				),
 			)
@@ -723,6 +734,50 @@ sub country {
 
 1;
 
+package Data::v::Param;
+
+use overload
+	'""'  => \&as_string,
+	'cmp' => \&Data::Header::Fields::Value::cmp,
+;
+
+sub new {
+	my $class = shift;
+	return bless {
+		@_
+	}, $class;
+}
+
+sub name {
+	my $self   = shift;	
+
+	$self->{'name'} = shift @_
+		if (@_);
+
+	return $self->{'name'};
+}
+
+sub value {
+	my $self   = shift;	
+
+	$self->{'value'} = shift @_
+		if (@_);
+
+	return $self->{'value'};
+}
+
+sub as_string {
+	my $self   = shift;	
+	
+	return
+		(lc $self->name eq 'type')
+		? $self->value
+		: $self->name.'='.$self->value
+	;
+}
+
+1;
+
 package Data::v::Calendar;
 
 use base 'Data::v';
@@ -731,6 +786,37 @@ use base 'Data::v';
 
 
 __END__
+
+=head1 NAME
+
+=head1 SYNOPSIS
+
+	use Data::v;
+
+	my $vdata = Data::v->new->decode([ '..', 't', 'vcf', 'aldo.vcf' ]);
+	my $vcard = $vdata->get_value('vcard');
+	
+	print 'version:   ', $vcard->get_value('version'), "\n";
+	print 'full name: ', $vcard->get_value('fn'), "\n";
+	print 'email:     ', $vcard->get_value('email'), "\n";
+	
+	my @cell_phones = $vcard->get_fields('tel');
+	
+	use List::MoreUtils 'any';
+	my @cell_phones =
+		map { $_->value->as_string }
+		$vcard->get_fields('tel', 'type' => 'cell')
+	;
+	print 'cell:      ', join(', ', @cell_phones), "\n";
+	
+	print "\n";
+	
+	$vcard->set_value('email' => 'dada@internet');
+	$vcard->rm_fields('rev', 'photo', 'adr', 'X-MS-OL-DEFAULT-POSTAL-ADDRESS', 'label');
+	
+	print $vdata->encode, "\n";
+
+=head1 DESCRIPTION
 
 =head1 SEE ALSO
 

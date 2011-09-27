@@ -5,8 +5,8 @@ use warnings;
 
 use utf8;
 
-use Test::More 'no_plan';
-#use Test::More tests => 10;
+#use Test::More 'no_plan';
+use Test::More tests => 15;
 use Test::Differences;
 use Test::Exception;
 use Test::Deep;
@@ -45,6 +45,8 @@ sub basic {
 	
 	is($vcard->get_value('ADR')->country, 'Österreich', 'adr->country() in Windows-1252');
 
+	cmp_ok($vcard->get_value('tel', 'type' => 'cell'), 'eq', '+43 (699) 15 991 000', 'get cell phone');
+
 	my $enc_vcf = IO::Any->slurp([ $Bin, 'vcf', 'enc.vcf' ]);
 	my $enc_vdata = Data::v->new->decode(\$enc_vcf);
 	my $enc_vcard = $enc_vdata->get_value('VCARD');
@@ -56,21 +58,24 @@ sub basic {
 	cmp_ok($enc_vcard->get_value('N'), 'eq', 'aäčšťľžř;aacsztl', 'encoded N (iso-8859-2)');
 	cmp_ok($enc_vcard->get_value('FN'), 'eq', 'aacsztl aäčšťľžř', 'encoded FN (windows-1250)');
 	cmp_ok($enc_vcard->get_value('PHOTO'), 'eq', 'http://www.gravatar.com/avatar/b6e8656226999389e5098d10e00226fe?just-test=ůčšžťľä', 'encoded FN (iso-8859-2)');
-	
-	TODO: {
-		local $TODO = 'uri-s should be decoded as URI objects';
-		isa_ok($enc_vcard->get_value('PHOTO'), 'URI', 'photo uri as URI object');
-	}
 }
 
 sub photo {
 	my $aldo_vcf = IO::Any->slurp([ $Bin, 'vcf', 'aldo.vcf' ]);
 	my $aldo_img = IO::Any->slurp([ $Bin, 'vcf', 'aldo.jpg' ]);
 
-	my $vdata = Data::v->new->decode(\$aldo_vcf);
-	my $vcard = $vdata->get_value('VCARD');
+	my $a_vdata = Data::v->new->decode(\$aldo_vcf);
+	my $a_vcard = $a_vdata->get_value('VCARD');
 	
-	my $photo_bin = $vcard->get_value('photo');
-	IO::Any->spew([ $Bin, 'vcf', 'aldo.jpg-extracted' ], $photo_bin);
-	ok($photo_bin eq $aldo_img, 'extract photo');
+	my $a_photo_bin = $a_vcard->get_value('photo');
+	ok($a_photo_bin->value eq $aldo_img, 'extract photo');
+
+	my $michael_vcf = IO::Any->slurp([ $Bin, 'vcf', 'michael.vcf' ]);
+	my $michael_img = IO::Any->slurp([ $Bin, 'vcf', 'michael.jpg' ]);
+
+	my $m_vdata = Data::v->new->decode(\$michael_vcf);
+	my $m_vcard = $m_vdata->get_value('VCARD');
+	
+	my $m_photo_bin = $m_vcard->get_value('photo');
+	ok($m_photo_bin->value eq $michael_img, 'extract photo');
 }

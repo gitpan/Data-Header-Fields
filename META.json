@@ -4,7 +4,7 @@
       "Jozef Kutej <jkutej@cpan.org>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.38, CPAN::Meta::Converter version 2.110580",
+   "generated_by" : "Module::Build version 0.38, CPAN::Meta::Converter version 2.112150",
    "keywords" : [
       "rfc822",
       "rfc2822",
@@ -31,7 +31,7 @@
       },
       "configure" : {
          "requires" : {
-            "Module::Build" : "0.38"
+            "Module::Build" : "0.36"
          }
       },
       "runtime" : {
@@ -50,7 +50,7 @@
    "provides" : {
       "Data::Header::Fields" : {
          "file" : "lib/Data/Header/Fields.pm",
-         "version" : "0.02"
+         "version" : "0.04"
       },
       "Data::Header::Fields::Line" : {
          "file" : "lib/Data/Header/Fields.pm",
@@ -62,7 +62,7 @@
       },
       "Data::v" : {
          "file" : "lib/Data/v.pm",
-         "version" : "0.02"
+         "version" : "0.03"
       },
       "Data::v::Calendar" : {
          "file" : "lib/Data/v.pm",
@@ -87,6 +87,10 @@
       "Data::v::Card::Value::Name" : {
          "file" : "lib/Data/v.pm",
          "version" : 0
+      },
+      "Data::v::Param" : {
+         "file" : "lib/Data/v.pm",
+         "version" : 0
       }
    },
    "release_status" : "stable",
@@ -98,9 +102,8 @@
          "http://dev.perl.org/licenses/"
       ],
       "repository" : {
-         "type" : "git",
          "url" : "git://github.com/jozef/Data-Header-Fields.git"
       }
    },
-   "version" : "0.02"
+   "version" : "0.04"
 }
